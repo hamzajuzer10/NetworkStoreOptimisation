@@ -6,12 +6,12 @@ rm(list = ls())
 source("optimisation.R")
 
 #get base model
-base <- build_base(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\PD\\LocationEdge\\main\\", 
-                   output_csv=TRUE, output_spec=NULL, 
+base <- build_base(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\LocationEdge\\InputFiles\\", 
+                   output_csv=TRUE, output_spec=NA, 
                    apply_rules=TRUE, apply_min_turnover=15000, apply_store_filter=NA)
 
 #run optimisation
-opt_res <- optimise(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\PD\\LocationEdge\\main\\", 
+opt_res <- optimise(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\LocationEdge\\InputFiles\\", 
                      use_distance_estimate_measure=TRUE,
                      max_dist_LSOA_km=25,
                      max_dist_store_LSOA_km=15,
@@ -19,12 +19,12 @@ opt_res <- optimise(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\PD\\Loc
                      top_n_perc=10, 
                      type_S2='AVG',
                      type_S3='greedy',
-                     apply_rules=FALSE, 
+                     apply_rules=TRUE, 
                      apply_min_turnover=15000, 
                      apply_store_filter=NA, 
                      competition_distance_KM=1,
                      max_LSOA_dist_km=5,
-                     top_stores=1)
+                     top_stores=10)
 
 #run individual scenario
 non_opt_res <- calc_non_opt_demand(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\PD\\LocationEdge\\main\\",
@@ -33,7 +33,8 @@ non_opt_res <- calc_non_opt_demand(input_file_path = "C:\\Users\\hamzajuzer\\Doc
                     apply_store_filter=NA, 
                     competition_distance_KM=1,
                     max_LSOA_dist_km=5,
-                    "new_store", 
+                    store_name="new_store", 
                     store_lat=52.44819, 
-                    store_long=-1.822393)
+                    store_long=-1.822393,
+                    retail_centre_type="NA", store_size=20000)
 

@@ -171,6 +171,7 @@ calculateAttractivenessAndClass <- function(store_name, store_lat, store_long, O
   competition_distance_KM <- attractiveness_fun_arg$competition_distance_KM
   oa_class_df <- attractiveness_fun_arg$oa_class_df
   OA_centroids_df <- attractiveness_fun_arg$OA_centroids_df
+  store_size <- attractiveness_fun_arg$store_size
   
   #Build dataframe of origin centroids
   origin_centroids_df <- data.frame("long" = store_long, "lat" = store_lat, "store"=store_name)
@@ -244,7 +245,7 @@ calculateAttractivenessAndClass <- function(store_name, store_lat, store_long, O
   x <- attractiveness_new_store(store_name, retail_centre_type=retail_centre_type, footfall, 
                                 competition_one_km=n_existing_stores, 
                                 competition_sq_feet_one_km=square_feet,
-                                in_london=in_london, class=class)
+                                in_london=in_london, class=class, store_size)
   
   return(x)
 }
@@ -672,7 +673,8 @@ optimise <- function(input_file_path,
                     "s.london_poly_df" = preproc$s.london_poly_df,
                     "competition_distance_KM" = competition_distance_KM,
                     "oa_class_df" = preproc$oa_class_df,
-                    "OA_centroids_df" = preproc$OA_centroids_df)
+                    "OA_centroids_df" = preproc$OA_centroids_df,
+                    "store_size" = 16380)
     
     message("Completing stage 3 (final) of the optimisation...")
     
@@ -706,7 +708,8 @@ calc_non_opt_demand <- function(input_file_path,
                                 apply_store_filter=NA, 
                                 competition_distance_KM=1,
                                 max_LSOA_dist_km=5,
-                                store_name, store_lat, store_long){
+                                store_name, store_lat, store_long, 
+                                retail_centre_type, store_size){
   
   ##Preprocess all data
   message("Preprocessing data...")
@@ -715,14 +718,15 @@ calc_non_opt_demand <- function(input_file_path,
   
   ##Calculate demand for new location
   attractiveness_fun_arg <- list("using_opt" = FALSE,
-                                 "retail_centre_type" = "NA",
+                                 "retail_centre_type" = retail_centre_type,
                                  "competition_restaurants_df" = preproc$competition_restaurants_df,
                                  "ten_mon_footfall_poly_df" = preproc$ten_mon_footfall_poly_df,
                                  "ten_mon_footfall_OAs_df" = preproc$ten_mon_footfall_OAs_df,
                                  "s.london_poly_df" = preproc$s.london_poly_df,
                                  "competition_distance_KM" = competition_distance_KM,
                                  "oa_class_df" = preproc$oa_class_df,
-                                 "OA_centroids_df" = preproc$OA_centroids_df)
+                                 "OA_centroids_df" = preproc$OA_centroids_df,
+                                 "store_size" = store_size)
   
   message("Calculating drive times for new store location...")
   s_pred <- calc_demand(store_name = store_name, 

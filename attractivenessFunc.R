@@ -1,10 +1,10 @@
 # define new store attractiveness
 attractiveness_new_store <- function(store_name, retail_centre_type="NA", footfall, 
                                      competition_one_km, competition_sq_feet_one_km,
-                                     in_london, class){
+                                     in_london, class, store_size){
   
-  
-  attractiveness <- 1000
+  #calculate base attractiveness based on log curve
+  attractiveness <- 7469.1*log(store_size)-40377
   uplift <- 1
   
   if(retail_centre_type=="Major Mall"){
