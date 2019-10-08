@@ -18,6 +18,7 @@ There should be four main functions that you will see:
 
 1) build_base: This function will calculate the expected demand for existing stores 
 Arguments:
+
 a) input_file_path: "C:\\Users\\..\\" path to your input files - make sure you append an \\ to the end (see step 4 in cloning the repository),
 
 b) output_csv: (TRUE/FALSE) writes the expected demand and output files for existing stores into the directory of your choice (see output_spec), 
@@ -34,6 +35,7 @@ The output of this function is a list with 1 key/value: key: "Gravity_model_stor
 
 2) optimise: This function will optimise network store locations for each region. It will calculate the top n new stores in each region based on expected demand
 Arguments:
+
 a) input_file_path: "C:\\Users\\..\\" path to your input files - make sure you append an \\ to the end (see step 4 in cloning the repository), 
 
 b) use_distance_estimate_measure: (TRUE/FALSE) uses an estimate of LSOA land area size to filter potential new store sites (used in stage 1 optimisation),
