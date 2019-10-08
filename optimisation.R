@@ -487,7 +487,7 @@ calc_demand <- function(store_name, store_lat, store_long, LSOA_centroids_df,
 }
 
 initOptimisation_s3 <- function(df.g, 
-                                type='greedy',
+                                type='non-greedy',
                                 LSOA_centroids_df,
                                 existing_store_centroid_df,
                                 Drive_time_matrix_adf,
@@ -502,7 +502,7 @@ initOptimisation_s3 <- function(df.g,
                                 apply_rules,
                                 apply_min_turnover){
   
-  if (type=="greedy"){
+  if (type=="non-greedy"){
     
     
     #keep a counter of all stores which are added to top list
@@ -595,7 +595,7 @@ optimise <- function(input_file_path,
                      min_demand=50000,
                      top_n_perc=10, 
                      type_S2='AVG',
-                     type_S3='greedy',
+                     type_S3='non-greedy',
                      apply_rules=FALSE, 
                      apply_min_turnover=15000, 
                      apply_store_filter=NA, 
