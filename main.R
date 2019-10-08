@@ -7,7 +7,7 @@ source("optimisation.R")
 
 #get base model
 base <- build_base(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\LocationEdge\\InputFiles\\", 
-                   output_csv=TRUE, output_spec=NA, 
+                   output_csv=FALSE, output_spec=NA, 
                    apply_rules=TRUE, apply_min_turnover=15000, apply_store_filter=NA)
 
 #run optimisation
@@ -26,7 +26,7 @@ opt_res <- optimise(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\Locatio
                      max_LSOA_dist_km=5,
                      top_stores=10)
 
-#run individual scenario
+#run individual scenario - uses OSRM demo server (to do: use distance matrix)
 non_opt_res <- calc_non_opt_demand(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\PD\\LocationEdge\\main\\",
                     apply_rules=FALSE, 
                     apply_min_turnover=15000, 
@@ -38,3 +38,5 @@ non_opt_res <- calc_non_opt_demand(input_file_path = "C:\\Users\\hamzajuzer\\Doc
                     store_long=-1.822393,
                     retail_centre_type="NA", store_size=20000)
 
+#Compare 2 scenarios
+comparison <- compare_scenarios(arg_x=base, arg_y=opt_res$E12000005)

@@ -771,3 +771,27 @@ calc_non_opt_demand <- function(input_file_path,
   return(result)
   
 }
+
+compare_scenarios <- function(arg_x,
+                                arg_y){
+  
+  #Compare the demand outputs of demand predictions 1 vs demand predictions 2
+  #First lets rename some cols
+  arg_x$Gravity_model_store_predictions <- plyr::rename(arg_x$Gravity_model_store_predictions,
+                                                        c("store"="store.x", "demand"="demand.x"))
+  arg_y$Gravity_model_store_predictions <- plyr::rename(arg_y$Gravity_model_store_predictions,
+                                                        c("store"="store.y", "demand"="demand.y"))
+  
+  
+  similar_store_demand <- merge(arg_x$Gravity_model_store_predictions, 
+                                arg_y$Gravity_model_store_predictions,
+                                by.x="store.x", by.y="store.y")
+  
+  #Find the difference
+  similar_store_demand$demand_difference <- similar_store_demand$demand.x - similar_store_demand$demand.y
+  
+  #Remove unnecessary cols and rename
+  similar_store_demand <- plyr::rename(similar_store_demand, c("store.x"="store"))
+  
+  return(similar_store_demand)
+}
