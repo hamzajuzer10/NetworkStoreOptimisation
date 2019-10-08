@@ -4,7 +4,7 @@ Network Store Optimisation (R)
 Steps to clone the repository to your local drive:
 
 1) Download and install git and git bash (If not done so)
-2) Open git bash and access the directory to clone the repo
+2) Open git bash and access the directory to clone the repo to
 3) Type git clone https://github.com/hamzajuzer10/NetworkStoreOptimisation.git into git bash terminal to clone your repo
 4) Access K:\Consulting\London\Clients\P\PizzaExpress\11. Data for Hamza\Optimisation Model Input Files to source all input files to save in your designated input location - it is advisable to copy these files into the same drive where your code will be run as the code will read from them
 
@@ -13,8 +13,12 @@ Steps to run the model:
 1) Access the cloned repository on your local drive
 2) Select main R project to open RStudio
 3) Open main.R in RStudio
+4) Run the first few lines of code
 
-There should be four main functions that you will see:
+       rm(list = ls())
+       source("optimisation.R")
+
+There should be four main functions that you will see (you do not need to run them in order):
 
 1) build_base: This function will calculate the expected demand for existing stores 
 
@@ -37,18 +41,30 @@ Arguments:
 2) optimise: This function will optimise network store locations for each region. It will calculate the top n new stores in each region based on expected demand
 
 The region code to name mapping is as follows:
-Region_Code: Region_Name
-E12000005: West Midlands
-E12000004: East Midlands
-E12000001: North East
-E12000002: North West
-E12000003: Yorkshire and The Humber
-E12000009: South West
-E12000006: East of England
-E12000008: South East
-E12000007: London
-S92000003: Scotland
-W92000004: Wales
+
+    Region_Code: Region_Name
+
+    E12000005: West Midlands
+
+    E12000004: East Midlands
+
+    E12000001: North East
+
+    E12000002: North West
+
+    E12000003: Yorkshire and The Humber
+
+    E12000009: South West
+
+    E12000006: East of England
+
+    E12000008: South East
+
+    E12000007: London
+
+    S92000003: Scotland
+
+    W92000004: Wales
 
 Arguments:
 
