@@ -3,7 +3,7 @@ if (!require('reshape2')) install.packages('reshape2'); library('reshape2')
 if (!require('data.table')) install.packages('data.table'); library('data.table')
 
 
-modelfunc <- function(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf, output_csv=FALSE, output_spec=NULL){
+modelfunc <- function(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf, output_csv=FALSE, output_spec=NULL, scaling_factor=1.0){
 
   #Create drive time matrix and attractiveness vector
   # Calculate drive time once! #Drive_time_matrix = acast(Drive_Time, geography_id ~ store_id, value.var = "drive_time")
@@ -28,6 +28,9 @@ modelfunc <- function(Store_list_df, constants_df, LSOA_demand_surface_df, Drive
 
   #calculate the demand from each geography to each store
   Grm_dem = Grm_pr*c(Demand_surface)
+  
+  #scale the demand with a scaling factor
+  Grm_dem = Grm_dem*scaling_factor
   
   #convert to long tables
   Gravity_model_probability = melt(Grm_pr, varnames = c("LSOA", "store"), value.name = "probability")

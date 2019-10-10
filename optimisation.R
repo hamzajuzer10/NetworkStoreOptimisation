@@ -349,16 +349,12 @@ calc_new_drive_time_matrix_and_store_list <- function(store_name, store_lat, sto
                         existing_store_centroid_df, Drive_time_matrix_adf, 
                         Store_list_df, attractiveness_fun, attractiveness_fun_arg, 
                         constants_df, LSOA_demand_surface_df, max_LSOA_dist_km, 
-                        use_drive_time_list=FALSE, Drive_time_list_df){
+                        use_drive_time_list=FALSE, Drive_time_list_df, Drive_time_list_gen_df=NULL){
   
   OA <- store_name
   CENTROID_LAT <- store_lat
   CENTROID_LONG <- store_long
   origin_centroids_df <- data.frame("long" = CENTROID_LONG, "lat" = CENTROID_LAT)
-  
-  #get the closest stores within max distance
-  stores <- calculateClosest(origin_centroids_df, existing_store_centroid_df, max_LSOA_dist_km)
-  stores <- stores[["store"]]
   
   if (use_drive_time_list){
     
@@ -367,14 +363,37 @@ calc_new_drive_time_matrix_and_store_list <- function(store_name, store_lat, sto
     
   } else {
     
-    # get the closest LSOAs within max distance
-    LSOAs <- calculateClosest(origin_centroids_df, LSOA_centroids_df, max_LSOA_dist_km)
+    # # get the closest LSOAs within max distance
+    # LSOAs <- calculateClosest(origin_centroids_df, LSOA_centroids_df, max_LSOA_dist_km)
+    # 
+    # #loop through all LSOAs and get the drivetime
+    # LSOAs[["drive_time"]] <- apply(LSOAs[,c(2,3)], 1, function(x)
+    #   drivetime(CENTROID_LONG, CENTROID_LAT, x['long'], x['lat']))
+    if (is.null(Drive_time_list_gen_df))
+    {
+      
+      message("No generic drive time list supplied...")
+      stop("Terminating demand calculation")
+      
+    }
     
-    #loop through all LSOAs and get the drivetime
-    LSOAs[["drive_time"]] <- apply(LSOAs[,c(2,3)], 1, function(x)
-      drivetime(CENTROID_LONG, CENTROID_LAT, x['long'], x['lat']))
+    #Find the closest point in the generic drive time list from current point
+    drive_time_pts <- subset(Drive_time_list_gen_df, select=c("lat", "long"))
+    drive_time_pts <- drive_time_pts[!(duplicated(drive_time_pts)), ]
+    npoint <- nearestPoint(origin_centroids_df, drive_time_pts)
+    
+    #get the LSOAs from the drive time list
+    LSOAs <- Drive_time_list_gen_df[which(Drive_time_list_gen_df$lat == npoint$lat &
+                                            Drive_time_list_gen_df$long == npoint$long), ]
     
     
+    
+  }
+  
+  if(dim(LSOAs)[1] == 0){
+    
+    message("Missing location to LSOA drive time in drive time list!")
+    stop('Terminating routine!')
   }
   
   #add a new store with default store id OA
@@ -409,7 +428,8 @@ calc_demand <- function(store_name, store_lat, store_long, LSOA_centroids_df,
                         existing_store_centroid_df, Drive_time_matrix_adf, 
                         Store_list_df, attractiveness_fun, attractiveness_fun_arg, 
                         constants_df, LSOA_demand_surface_df, max_LSOA_dist_km, 
-                        use_drive_time_list=FALSE, Drive_time_list_df){
+                        use_drive_time_list=FALSE, Drive_time_list_df, scaling_factor, 
+                        Drive_time_list_gen_df=NULL){
   
   OA <- store_name
   CENTROID_LAT <- store_lat
@@ -440,13 +460,40 @@ calc_demand <- function(store_name, store_lat, store_long, LSOA_centroids_df,
 
   } else {
     
-    # get the closest LSOAs within max distance
-    LSOAs <- calculateClosest(origin_centroids_df, LSOA_centroids_df, max_LSOA_dist_km)
+    # # get the closest LSOAs within max distance
+    # LSOAs <- calculateClosest(origin_centroids_df, LSOA_centroids_df, max_LSOA_dist_km)
+    # 
+    # #loop through all LSOAs and get the drivetime
+    # LSOAs[["drive_time"]] <- apply(LSOAs[,c(2,3)], 1, function(x)
+    #   drivetime(CENTROID_LONG, CENTROID_LAT, x['long'], x['lat']))
     
-    #loop through all LSOAs and get the drivetime
-    LSOAs[["drive_time"]] <- apply(LSOAs[,c(2,3)], 1, function(x)
-      drivetime(CENTROID_LONG, CENTROID_LAT, x['long'], x['lat']))
+    #use the generic drivetime list
+    if (is.null(Drive_time_list_gen_df))
+    {
+      
+      message("No generic drive time list supplied...")
+      stop("Terminating demand calculation")
+      
+    }
     
+    #Find the closest point in the generic drive time list from current point
+    message("Finding closest drive time point...")
+    drive_time_pts <- subset(Drive_time_list_gen_df, select=c("lat", "long"))
+    drive_time_pts <- drive_time_pts[!(duplicated(drive_time_pts)), ]
+    npoint <- nearestPoint(origin_centroids_df, drive_time_pts)
+    message("Nearest point has latitude ", npoint$lat, " and longitude ", npoint$long)
+    message("Using these coordinates to calculate drive times...")
+    
+    #get the LSOAs from the drive time list
+    LSOAs <- Drive_time_list_gen_df[which(Drive_time_list_gen_df$lat == npoint$lat &
+                                            Drive_time_list_gen_df$long == npoint$long), ]
+    
+    if(dim(LSOAs)[1] == 0){
+      
+      message("No LSOAs associated with these coordinates in supplied drive time list...")
+      stop('Terminating demand calculation')
+      
+    }
     
   }
   
@@ -479,7 +526,7 @@ calc_demand <- function(store_name, store_lat, store_long, LSOA_centroids_df,
   Store_list_df_n <- rbind(Store_list_df, n_store_df)
   
   #run the model
-  result <- modelfunc(Store_list_df_n, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf_n)
+  result <- modelfunc(Store_list_df_n, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf_n, scaling_factor=scaling_factor)
   s_pred <- result[["Gravity_model_store_predictions"]][which(result[["Gravity_model_store_predictions"]]$store %in% OA),]
   s_pred$lat <- CENTROID_LAT
   s_pred$long <- CENTROID_LONG
@@ -500,7 +547,8 @@ initOptimisation_s3 <- function(df.g,
                                 Drive_time_list_df,
                                 top_stores=1,
                                 apply_rules,
-                                apply_min_turnover){
+                                apply_min_turnover, 
+                                scaling_factor){
   
   if (type=="non-greedy"){
     
@@ -519,11 +567,13 @@ initOptimisation_s3 <- function(df.g,
       for (row in 1:nrow(df.g$vertex_metadata_OA_df)) {
         
         
-        message("Evaluating new row: ", row)
+        message("Evaluating new row: ", row, " and new OA ",as.character(df.g$vertex_metadata_OA_df[row, "VERTEX"]))
         
         #check if vertex is already in t_store list - continue if so
         if (df.g$vertex_metadata_OA_df[row, "VERTEX"] %in% t_stores$store){
           
+          message("OA has already been evaluated... ")
+          message("Evaluating next OA... ")
           next
           
         }
@@ -538,7 +588,8 @@ initOptimisation_s3 <- function(df.g,
                               Store_list_df, attractiveness_fun, attractiveness_fun_arg, 
                               constants_df, LSOA_demand_surface_df, max_LSOA_dist_km, 
                               use_drive_time_list = TRUE, 
-                              Drive_time_list_df=Drive_time_list_df)
+                              Drive_time_list_df=Drive_time_list_df, 
+                              scaling_factor=scaling_factor)
         
         
         res_pred <- rbind(res_pred, s_pred)
@@ -579,7 +630,7 @@ initOptimisation_s3 <- function(df.g,
     }
     
     #Once all optimal stores have been added, calculate the full demand matrix again
-    result <- modelfunc(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf)
+    result <- modelfunc(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf, scaling_factor=scaling_factor)
     
   
   }
@@ -601,11 +652,12 @@ optimise <- function(input_file_path,
                      apply_store_filter=NA, 
                      competition_distance_KM=1,
                      max_LSOA_dist_km=5,
-                     top_stores=1){
+                     top_stores=1, 
+                     scaling_factor=1.0){
   
   ##Preprocess all data
   message("Preprocessing data...")
-  preproc <- preprocess_optimisation(input_file_path, use_distance_estimate_measure, apply_rules, apply_min_turnover, apply_store_filter)
+  preproc <- preprocess_optimisation(input_file_path, use_distance_estimate_measure, apply_rules, apply_min_turnover, apply_store_filter, scaling_factor=scaling_factor)
   message("Preprocessing data completed...")
   
   
@@ -692,7 +744,8 @@ optimise <- function(input_file_path,
                                       Drive_time_list_df=preproc$Drive_time_list_df,
                                       top_stores,
                                       apply_rules,
-                                      apply_min_turnover)
+                                      apply_min_turnover, 
+                                      scaling_factor=scaling_factor)
     message("Stage 3 completed...")
     
     
@@ -709,11 +762,12 @@ calc_non_opt_demand <- function(input_file_path,
                                 competition_distance_KM=1,
                                 max_LSOA_dist_km=5,
                                 store_name, store_lat, store_long, 
-                                retail_centre_type, store_size){
+                                retail_centre_type, store_size, 
+                                scaling_factor=1.0){
   
   ##Preprocess all data
   message("Preprocessing data...")
-  preproc <- preprocess_optimisation(input_file_path, use_distance_estimate_measure=FALSE, apply_rules, apply_min_turnover, apply_store_filter)
+  preproc <- preprocess_optimisation(input_file_path, use_distance_estimate_measure=FALSE, apply_rules, apply_min_turnover, apply_store_filter, scaling_factor=scaling_factor)
   message("Preprocessing data completed...")
   
   ##Calculate demand for new location
@@ -737,7 +791,9 @@ calc_non_opt_demand <- function(input_file_path,
                         preproc$Store_list_df, calculateAttractivenessAndClass, attractiveness_fun_arg, 
                         preproc$constants_df, preproc$LSOA_demand_surface_df, max_LSOA_dist_km=max_LSOA_dist_km, 
                         use_drive_time_list = FALSE, 
-                        Drive_time_list_df=preproc$Drive_time_list_df)
+                        Drive_time_list_df=preproc$Drive_time_list_df, 
+                        scaling_factor=scaling_factor,
+                        Drive_time_list_gen_df=preproc$Drive_time_list_gen_df)
   message("Completed calculating drive times for new store location...")
   
   #check if store meets min demand conditions
@@ -759,14 +815,14 @@ calc_non_opt_demand <- function(input_file_path,
                                                      preproc$Store_centroids_df, preproc$Drive_time_matrix_adf, 
                                                      preproc$Store_list_df, calculateAttractivenessAndClass, attractiveness_fun_arg, 
                                                      preproc$constants_df, preproc$LSOA_demand_surface_df, max_LSOA_dist_km=max_LSOA_dist_km, 
-                                                     use_drive_time_list=FALSE, preproc$Drive_time_list_df)
+                                                     use_drive_time_list=FALSE, preproc$Drive_time_list_df, Drive_time_list_gen_df=preproc$Drive_time_list_gen_df)
   
   
   
   #Once all optimal stores have been added, calculate the full demand matrix again
   message("Calculating demand for new store location...")
   result <- modelfunc(new_m$Store_list_df_n, preproc$constants_df, 
-                      preproc$LSOA_demand_surface_df, new_m$Drive_time_matrix_adf_n)
+                      preproc$LSOA_demand_surface_df, new_m$Drive_time_matrix_adf_n, scaling_factor=scaling_factor)
   
   return(result)
   

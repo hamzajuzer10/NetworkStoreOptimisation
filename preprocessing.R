@@ -14,7 +14,7 @@ source("helper.R")
 source("model.R")
 source("storeRules.R")
 
-build_base <- function(input_file_path, output_csv=FALSE, output_spec=NULL, apply_rules=FALSE, apply_min_turnover=15000, apply_store_filter=NA){
+build_base <- function(input_file_path, output_csv=FALSE, output_spec=NULL, apply_rules=FALSE, apply_min_turnover=15000, apply_store_filter=NA, scaling_factor=1.0){
 
   ##Load all input files
   message("Loading input files...")
@@ -80,7 +80,7 @@ build_base <- function(input_file_path, output_csv=FALSE, output_spec=NULL, appl
   if(apply_rules){
     #compute initial base model
     message("...")
-    base_model <- modelfunc(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf, output_csv=FALSE, output_spec=NULL)
+    base_model <- modelfunc(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf, output_csv=FALSE, output_spec=NULL, scaling_factor=scaling_factor)
     
     #get list of stores which follow rules
     Store_list_df <- applyStoreRules(Store_list_df, base_model$Gravity_model_store_predictions, min_turnover=apply_min_turnover, store=apply_store_filter)
@@ -88,10 +88,10 @@ build_base <- function(input_file_path, output_csv=FALSE, output_spec=NULL, appl
     
     #recompute base model with new store list
     message("Calculating store demand...")
-    base_model <- modelfunc(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf, output_csv=output_csv, output_spec=output_spec)
+    base_model <- modelfunc(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf, output_csv=output_csv, output_spec=output_spec, scaling_factor=scaling_factor)
   } else {
     message("Calculating store demand...")
-    base_model <- modelfunc(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf, output_csv=output_csv, output_spec=output_spec)
+    base_model <- modelfunc(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf, output_csv=output_csv, output_spec=output_spec, scaling_factor=scaling_factor)
     
   }
   message("Calculating store demand complete...")
@@ -105,7 +105,7 @@ build_base <- function(input_file_path, output_csv=FALSE, output_spec=NULL, appl
   return(base_model)
 }
 
-preprocess_optimisation <- function(input_file_path, use_distance_estimate_measure, apply_rules, apply_min_turnover, apply_store_filter){
+preprocess_optimisation <- function(input_file_path, use_distance_estimate_measure, apply_rules, apply_min_turnover, apply_store_filter, scaling_factor){
   
   ##Load all input files
   message("Loading input files...")
@@ -120,6 +120,7 @@ preprocess_optimisation <- function(input_file_path, use_distance_estimate_measu
   Drivetime_matrix_a <- "Drive_time_matrix_adf.rds"
   constants <- "Constants.csv"
   drivetime_list <- "drivetime_list.rds"
+  drivetime_list_gen <- "drivetime_list_gen.rds"
   ten_mon_footfall_poly <- "UK10mon_footfall_100m_polygons.shp"
   ten_mon_footfall_count <- "UK10mon_footfall_100m_counts.csv"
   ten_mon_footfall_OAs <- "Footfall by Weight OA.csv"
@@ -140,6 +141,7 @@ preprocess_optimisation <- function(input_file_path, use_distance_estimate_measu
   Drivetime_matrix_a <- paste(input_file_path,Drivetime_matrix_a, sep="")
   constants <- paste(input_file_path,constants, sep="")
   drivetime_list <- paste(input_file_path,drivetime_list, sep="")
+  drivetime_list_gen <- paste(input_file_path,drivetime_list_gen, sep="")
   ten_mon_footfall_poly <- paste(input_file_path,ten_mon_footfall_poly, sep="")
   ten_mon_footfall_count <- paste(input_file_path,ten_mon_footfall_count, sep="")
   ten_mon_footfall_OAs <- paste(input_file_path,ten_mon_footfall_OAs, sep="")
@@ -208,7 +210,12 @@ preprocess_optimisation <- function(input_file_path, use_distance_estimate_measu
   }
   
   if(!file.exists(drivetime_list)){
-    message('Missing drive time list input data file!')
+    message('Missing drive time list for optimisation input data file!')
+    error <- TRUE
+  }
+  
+  if(!file.exists(drivetime_list_gen)){
+    message('Missing drive time list for generic location input data file!')
     error <- TRUE
   }
   
@@ -276,6 +283,7 @@ preprocess_optimisation <- function(input_file_path, use_distance_estimate_measu
   
   Drive_time_matrix_adf <- readRDS(file = Drivetime_matrix_a)
   Drive_time_list_df <- readRDS(file = drivetime_list)
+  Drive_time_list_gen_df <- readRDS(file = drivetime_list_gen)
   constants_df <- read.csv(file = constants, fileEncoding="UTF-8-BOM", stringsAsFactors = FALSE)
   
   s.ten_mon_footfall_poly_sf <- st_read(ten_mon_footfall_poly)
@@ -335,6 +343,7 @@ preprocess_optimisation <- function(input_file_path, use_distance_estimate_measu
   
   message("Preprocessing drive time list...")
   Drive_time_list_df <- plyr::rename(Drive_time_list_df, c("DriveTime"="drive_time"))
+  Drive_time_list_gen_df <- plyr::rename(Drive_time_list_gen_df, c("DriveTime"="drive_time"))
   
   ## aggregate footfall and merge
   message("Preprocessing aggregate footfall data...")
@@ -403,7 +412,7 @@ preprocess_optimisation <- function(input_file_path, use_distance_estimate_measu
   if (apply_rules){
     message("...")
     #Build base model and apply store rules which do not meet the criteria
-    base_model <- modelfunc(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf, output_csv=FALSE, output_spec=NULL)
+    base_model <- modelfunc(Store_list_df, constants_df, LSOA_demand_surface_df, Drive_time_matrix_adf, output_csv=FALSE, output_spec=NULL, scaling_factor=scaling_factor)
     Store_list_df <- applyStoreRules(Store_list_df, base_model$Gravity_model_store_predictions, apply_min_turnover, apply_store_filter)
     rm(base_model) # save memory
   }
@@ -464,6 +473,7 @@ preprocess_optimisation <- function(input_file_path, use_distance_estimate_measu
                   "Drive_time_matrix_adf" = Drive_time_matrix_adf,
                   "constants_df"= constants_df,
                   "Drive_time_list_df"=Drive_time_list_df,
+                  "Drive_time_list_gen_df"=Drive_time_list_gen_df,
                   "competition_restaurants_df"= competition_restaurants_df, 
                   "ten_mon_footfall_poly_df"= ten_mon_footfall_poly_df, 
                   "ten_mon_footfall_OAs_df" = ten_mon_footfall_OAs_df, 
