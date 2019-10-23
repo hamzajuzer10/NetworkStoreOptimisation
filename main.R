@@ -28,7 +28,7 @@ opt_res <- optimise(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\Locatio
                     scaling_factor=0.14)
 
 #run individual scenario
-non_opt_res <- calc_non_opt_demand(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\LocationEdge\\InputFiles\\",
+non_opt_res <- calc_non_opt_demand(input_file_path = "F:\\InputFiles\\",
                     apply_rules=TRUE, 
                     apply_min_turnover=50000, 
                     apply_store_filter=NA, 

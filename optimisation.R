@@ -6,6 +6,7 @@ if (!require('sf')) install.packages('sf'); library('sf')
 if (!require('sp')) install.packages('sp'); library('sp')
 if (!require('rgeos')) install.packages('rgeos'); library('rgeos')
 if (!require('dplyr')) install.packages('dplyr'); library('dplyr')
+if (!require('Rserve')) install.packages('Rserve'); library('Rserve')
 
 
 source("preprocessing.R")
