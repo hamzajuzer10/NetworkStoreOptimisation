@@ -14,7 +14,7 @@ Method 1:
 
 Method 2: 
 
-1) Select 
+1) Select Clone or Download (green button on top right hand corner of the screen) and download the zip file which contains the code
 
 Steps to run the model:
 
@@ -43,6 +43,8 @@ Arguments:
     e) apply_min_turnover: 15000 applies the min turnover to filter existing stores based on the expected demand, 
 
     f) apply_store_filter: c(3,4,5) applies filtering based on existing store ids - accepts numeric store ids
+    
+    g) scaling_factor: 0.14 applies a scaling factor to the output demand turnover prediction
 
   The output of this function is a list with 1 key/value: key: "Gravity_model_store_predictions" and it holds a dataframe with cols: store, demand
 
@@ -103,6 +105,8 @@ Arguments:
     m) max_LSOA_dist_km: 5 Calculates the LSOAs to be included in the drivetime matrix for potential OA locations (only used if OSRM is used),
 
     n) top_stores: 1 Calculates the top n new stores to be opened based on predicted demand. Takes store cannibalisation into account. 
+    
+    o) scaling_factor: 0.14 applies a scaling factor to the output demand turnover prediction
 
    The output of this function is a list with keys representing the region codes. The value for each region code key is a list with 1 key/value: key: "Gravity_model_store_predictions" and it holds a dataframe with cols: store, demand
 
@@ -120,7 +124,7 @@ Arguments:
 
     e) competition_distance_KM: 1 Calculates attractiveness scores based on competition range,
 
-    f) max_LSOA_dist_km: 5 Calculates the LSOAs to be included in the drivetime matrix for potential OA locations (only used if OSRM is used),
+    f) max_LSOA_dist_km: 5 Calculates the LSOAs to be included in the drivetime matrix for potential OA locations (only used if OSRM is used - this is now a legacy feature),
 
     g) store_name: "new_store" name of the new store (which will appear in the output store list)
     
@@ -131,6 +135,8 @@ Arguments:
     j) retail_centre_type: "Major Mall" Used to calculate attractiveness (see predefined list)
     
     k) store_size: 20000 Used to calculate attractiveness
+    
+    l) scaling_factor: 0.14 applies a scaling factor to the output demand turnover prediction
 
    The output of this function is a list with 1 key/value: key: "Gravity_model_store_predictions" and it holds a dataframe with cols: store, demand
 
