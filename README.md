@@ -3,10 +3,18 @@ Network Store Optimisation (R)
 
 Steps to clone the repository to your local drive:
 
+(2 methods)
+
+Method 1:
+
 1) Download and install git and git bash (If not done so)
 2) Open git bash and access the directory to clone the repo to
 3) Type git clone https://github.com/hamzajuzer10/NetworkStoreOptimisation.git into git bash terminal to clone your repo
 4) Access K:\Consulting\London\Clients\P\PizzaExpress\11. Data for Hamza\Optimisation Model Input Files to source all input files to save in your designated input location - it is advisable to copy these files into the same drive where your code will be run as the code will read from them
+
+Method 2: 
+
+1) Select 
 
 Steps to run the model:
 
