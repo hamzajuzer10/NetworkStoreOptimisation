@@ -38,7 +38,7 @@ evaluate_polygon <- function(polygon_df, store_name,
   
   for(i in seq(from=1, to=nrow(polygon_df), by=step_size)){
     j<-min(i+10000,nrow(polygon_df))
-    message("Evaluating polygon ", i, " to polygon ", j)
+    #message("Evaluating polygon ", i, " to polygon ", j)
     sp1<-polygon_df[i:j,]
     result <- over(as(sp1, "Spatial"), as(store_coords_sf, "Spatial"))
     

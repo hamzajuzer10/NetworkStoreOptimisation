@@ -180,20 +180,22 @@ calculateAttractivenessAndClass <- function(store_name, store_lat, store_long, O
   
   
   #Check if origin centroid is in london
+  message("Evaluating location of new store...")
   if(!is.null(evaluate_polygon(polygon_df=s.london_poly_df, store_name=store_name, 
                                store_lat=store_lat, store_long=store_long)))
   {
     
-    message("Location to be evaluated is in london")
+    message("Location to be evaluated is in London")
     in_london <- TRUE
     
   } else {
     
-    message("Location to be evaluated is not in london")
+    message("Location to be evaluated is not in London")
     in_london <- FALSE
   }
   
   #calculate footfall and class
+  message("Evaluating footfall and class of new store...")
   if (using_opt){
     
     #lookup footfall from ten_mon_footfall_OAs_df
@@ -379,9 +381,12 @@ calc_new_drive_time_matrix_and_store_list <- function(store_name, store_lat, sto
     }
     
     #Find the closest point in the generic drive time list from current point
+    message("Finding closest drive time point...")
     drive_time_pts <- subset(Drive_time_list_gen_df, select=c("lat", "long"))
     drive_time_pts <- drive_time_pts[!(duplicated(drive_time_pts)), ]
     npoint <- nearestPoint(origin_centroids_df, drive_time_pts)
+    message("Nearest point has latitude ", npoint$lat, " and longitude ", npoint$long)
+    message("Using these coordinates to calculate drive times...")
     
     #get the LSOAs from the drive time list
     LSOAs <- Drive_time_list_gen_df[which(Drive_time_list_gen_df$lat == npoint$lat &
@@ -783,36 +788,36 @@ calc_non_opt_demand <- function(input_file_path,
                                  "OA_centroids_df" = preproc$OA_centroids_df,
                                  "store_size" = store_size)
   
-  message("Calculating drive times for new store location...")
-  s_pred <- calc_demand(store_name = store_name, 
-                        store_lat = store_lat,
-                        store_long = store_long,
-                        preproc$LSOA_centroids_df,
-                        preproc$Store_centroids_df, preproc$Drive_time_matrix_adf, 
-                        preproc$Store_list_df, calculateAttractivenessAndClass, attractiveness_fun_arg, 
-                        preproc$constants_df, preproc$LSOA_demand_surface_df, max_LSOA_dist_km=max_LSOA_dist_km, 
-                        use_drive_time_list = FALSE, 
-                        Drive_time_list_df=preproc$Drive_time_list_df, 
-                        scaling_factor=scaling_factor,
-                        Drive_time_list_gen_df=preproc$Drive_time_list_gen_df)
-  message("Completed calculating drive times for new store location...")
+  ##message("Calculating drive times for new store location...")
+  ##s_pred <- calc_demand(store_name = store_name, 
+  ##                      store_lat = store_lat,
+  ##                    store_long = store_long,
+  ##                    preproc$LSOA_centroids_df,
+  ##                    preproc$Store_centroids_df, preproc$Drive_time_matrix_adf, 
+  ##                    preproc$Store_list_df, calculateAttractivenessAndClass, attractiveness_fun_arg, 
+  ##                    preproc$constants_df, preproc$LSOA_demand_surface_df, max_LSOA_dist_km=max_LSOA_dist_km, 
+  ##                    use_drive_time_list = FALSE, 
+  ##                    Drive_time_list_df=preproc$Drive_time_list_df, 
+  ##                    scaling_factor=scaling_factor,
+  ##                    Drive_time_list_gen_df=preproc$Drive_time_list_gen_df)
+  ##message("Completed calculating drive times for new store location...")
   
   #check if store meets min demand conditions
-  if (apply_rules){
+  ##if (apply_rules){
     
-    if (s_pred$demand < apply_min_turnover){
+  ##if (s_pred$demand < apply_min_turnover){
       
       ## break from current loop
-      message("Store at new location does not meet required demand conditions!")
-      stop("Terminating further calculation!")
+  ##  message("Store at new location does not meet required demand conditions!")
+  ##  stop("Terminating further calculation!")
       
-    }
+  ##}
     
-  }
+  ##}
   
   #Add store to store list and drivetime matrix adf for full calculation
   message("Adding store to the store list and drive time matrix...")
-  new_m <- calc_new_drive_time_matrix_and_store_list(as.character(s_pred$store), s_pred$lat, s_pred$long, preproc$LSOA_centroids_df,
+  new_m <- calc_new_drive_time_matrix_and_store_list(as.character(store_name), store_lat, store_long, preproc$LSOA_centroids_df,
                                                      preproc$Store_centroids_df, preproc$Drive_time_matrix_adf, 
                                                      preproc$Store_list_df, calculateAttractivenessAndClass, attractiveness_fun_arg, 
                                                      preproc$constants_df, preproc$LSOA_demand_surface_df, max_LSOA_dist_km=max_LSOA_dist_km, 
