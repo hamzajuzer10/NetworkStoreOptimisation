@@ -847,8 +847,7 @@ calc_non_opt_demand <- function(input_file_path,
                                                      preproc$Store_centroids_df, preproc$Drive_time_matrix_adf, 
                                                      preproc$Store_list_df, calculateAttractivenessAndClass, attractiveness_fun_arg, 
                                                      preproc$constants_df, preproc$LSOA_demand_surface_df, max_LSOA_dist_km=max_LSOA_dist_km, 
-                                                     use_drive_time_list=FALSE, preproc$Drive_time_list_df, Drive_time_list_gen_df=preproc$Drive_time_list_gen_df,
-                                                     output_csv=FALSE, output_spec=NULL)
+                                                     use_drive_time_list=FALSE, preproc$Drive_time_list_df, Drive_time_list_gen_df=preproc$Drive_time_list_gen_df)
   
   
   
