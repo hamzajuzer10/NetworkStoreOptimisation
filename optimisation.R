@@ -173,7 +173,7 @@ calculateAttractivenessAndClass <- function(store_name, store_lat, store_long, O
   oa_class_df <- attractiveness_fun_arg$oa_class_df
   OA_centroids_df <- attractiveness_fun_arg$OA_centroids_df
   store_size <- attractiveness_fun_arg$store_size
-  
+
   #Build dataframe of origin centroids
   origin_centroids_df <- data.frame("long" = store_long, "lat" = store_lat, "store"=store_name)
   
@@ -250,7 +250,16 @@ calculateAttractivenessAndClass <- function(store_name, store_lat, store_long, O
                                 competition_sq_feet_one_km=square_feet,
                                 in_london=in_london, class=class, store_size)
   
-  return(x)
+  #return x and other values including: footfall, competition_one_km, competition_sq_feet_one_km, class, in_london
+  res <- list("x" = x,
+              "footfall" = footfall,
+              "competition_one_km" = n_existing_stores,
+              "competition_sq_feet_one_km" = square_feet,
+              "class" = class,
+              "in_london" = in_london)
+  
+  
+  return(res)
 }
 
 
@@ -363,6 +372,8 @@ calc_new_drive_time_matrix_and_store_list <- function(store_name, store_lat, sto
     
     #get the LSOAs from the drive time list
     LSOAs <- Drive_time_list_df[which(Drive_time_list_df$OA == OA), ]
+    n_lat <- store_lat
+    n_long <- store_long
     
   } else {
     
@@ -385,6 +396,8 @@ calc_new_drive_time_matrix_and_store_list <- function(store_name, store_lat, sto
     drive_time_pts <- subset(Drive_time_list_gen_df, select=c("lat", "long"))
     drive_time_pts <- drive_time_pts[!(duplicated(drive_time_pts)), ]
     npoint <- nearestPoint(origin_centroids_df, drive_time_pts)
+    n_lat <- npoint$lat
+    n_long <- npoint$long
     message("Nearest point has latitude ", npoint$lat, " and longitude ", npoint$long)
     message("Using these coordinates to calculate drive times...")
     
@@ -413,7 +426,8 @@ calc_new_drive_time_matrix_and_store_list <- function(store_name, store_lat, sto
   Drive_time_matrix_adf_n <- data.matrix(Drive_time_matrix_adf_n)
   
   #add new store to store list
-  n_store_df <- attractiveness_fun(OA, CENTROID_LAT, CENTROID_LONG, OA, attractiveness_fun_arg)
+  n_store_list <- attractiveness_fun(OA, CENTROID_LAT, CENTROID_LONG, OA, attractiveness_fun_arg)
+  n_store_df <- n_store_list$x
   Store_list_df_n <- rbind(Store_list_df, n_store_df)
   
   #add new store centroid to centroid list
@@ -422,10 +436,20 @@ calc_new_drive_time_matrix_and_store_list <- function(store_name, store_lat, sto
                   "long" = c(store_long))
   existing_store_centroid_df_n <- rbind(existing_store_centroid_df, n_centroid_df)
   
-  #return the new drive time matrix and store list, and existing store centroid
+  #return the new drive time matrix and store list, and existing store centroid, and other new store specific info
   retList <- list("Drive_time_matrix_adf_n" = Drive_time_matrix_adf_n,
                   "Store_list_df_n" = Store_list_df_n, 
-                  "existing_store_centroid_df_n" = existing_store_centroid_df_n)
+                  "existing_store_centroid_df_n" = existing_store_centroid_df_n,
+                  "footfall" = n_store_list$footfall,
+                  "competition_one_km" = n_store_list$competition_one_km,
+                  "competition_sq_feet_one_km" = n_store_list$competition_sq_feet_one_km, 
+                  "class" = n_store_list$class, 
+                  "in_london" = n_store_list$in_london,
+                  "n_lat"=n_lat,
+                  "n_long"=n_long)
+
+  
+  
   return(retList)
 }
 
@@ -528,7 +552,8 @@ calc_demand <- function(store_name, store_lat, store_long, LSOA_centroids_df,
   Drive_time_matrix_adf_n <- data.matrix(Drive_time_matrix_adf_n)
   
   #add new store to store list
-  n_store_df <- attractiveness_fun(OA, CENTROID_LAT, CENTROID_LONG, OA, attractiveness_fun_arg)
+  n_store_list <- attractiveness_fun(OA, CENTROID_LAT, CENTROID_LONG, OA, attractiveness_fun_arg)
+  n_store_df <- n_store_list$x
   Store_list_df_n <- rbind(Store_list_df, n_store_df)
   
   #run the model
@@ -821,7 +846,8 @@ calc_non_opt_demand <- function(input_file_path,
                                                      preproc$Store_centroids_df, preproc$Drive_time_matrix_adf, 
                                                      preproc$Store_list_df, calculateAttractivenessAndClass, attractiveness_fun_arg, 
                                                      preproc$constants_df, preproc$LSOA_demand_surface_df, max_LSOA_dist_km=max_LSOA_dist_km, 
-                                                     use_drive_time_list=FALSE, preproc$Drive_time_list_df, Drive_time_list_gen_df=preproc$Drive_time_list_gen_df)
+                                                     use_drive_time_list=FALSE, preproc$Drive_time_list_df, Drive_time_list_gen_df=preproc$Drive_time_list_gen_df,
+                                                     output_csv=FALSE, output_spec=NULL)
   
   
   
@@ -829,6 +855,34 @@ calc_non_opt_demand <- function(input_file_path,
   message("Calculating demand for new store location...")
   result <- modelfunc(new_m$Store_list_df_n, preproc$constants_df, 
                       preproc$LSOA_demand_surface_df, new_m$Drive_time_matrix_adf_n, scaling_factor=scaling_factor)
+  
+  #return the new drive time matrix and store list, and existing store centroid, and other new store specific info
+  new_store_parameters <- data.frame("footfall" = new_m$footfall, 
+                                     "competition_one_km" = new_m$competition_one_km, 
+                                     "competition_sq_feet_one_km" = new_m$competition_sq_feet_one_km,
+                                     "class" = new_m$class, 
+                                     "in_london" = new_m$in_london,
+                                     "n_lat" = new_m$n_lat, 
+                                     "n_long" = new_m$n_long)
+  
+  
+  result$new_store_parameters <- new_store_parameters
+  
+  if (output_csv)
+  {
+    if(!is.null(output_spec)){
+      
+      fwrite(result$Gravity_model_store_predictions, file = paste(output_spec,"New_store_demand",".csv"), row.names=FALSE)
+      fwrite(result$new_store_parameters, file = paste(output_spec,"New_store_parameters",".csv"), row.names=FALSE)
+      
+    } else {
+      
+      message('No output specifier provided - csv files may be overwritten!')
+      fwrite(result$Gravity_model_store_predictions, file = paste("New_store_demand",".csv"), row.names=FALSE)
+      fwrite(result$new_store_parameters, file = paste(output_spec,"New_store_parameters",".csv"), row.names=FALSE)
+
+    }
+  }
   
   return(result)
   

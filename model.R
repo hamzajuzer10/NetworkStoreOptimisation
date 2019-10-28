@@ -49,13 +49,13 @@ modelfunc <- function(Store_list_df, constants_df, LSOA_demand_surface_df, Drive
     if(!is.null(output_spec)){
       
       fwrite(Gravity_model_store_predictions, file = paste(output_spec,"Store_demand",".csv"), row.names=FALSE)
-      fwrite(Gravity_model_output, file = paste(output_spec,"Output",".csv"), row.names=FALSE)
+      #    fwrite(Gravity_model_output, file = paste(output_spec,"Output",".csv"), row.names=FALSE)
       
     } else {
       
       message('No output specifier provided - csv files may be overwritten!')
       fwrite(Gravity_model_store_predictions, file = paste("Store_demand",".csv"), row.names=FALSE)
-      fwrite(Gravity_model_output, file = paste("Output",".csv"), row.names=FALSE)
+      #   fwrite(Gravity_model_output, file = paste("Output",".csv"), row.names=FALSE)
       
     }
   }
