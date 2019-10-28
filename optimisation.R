@@ -794,7 +794,8 @@ calc_non_opt_demand <- function(input_file_path,
                                 max_LSOA_dist_km=5,
                                 store_name, store_lat, store_long, 
                                 retail_centre_type, store_size, 
-                                scaling_factor=1.0){
+                                scaling_factor=1.0, 
+                                output_csv=TRUE, output_spec=NULL){
   
   ##Preprocess all data
   message("Preprocessing data...")
