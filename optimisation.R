@@ -891,11 +891,11 @@ calc_non_opt_demand <- function(input_file_path,
       }
     }
     
-    return(1)
+    return(0)
     
   } else {
     
-    return(0)
+    return(1)
     
   }
   
