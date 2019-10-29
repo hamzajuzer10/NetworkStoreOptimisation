@@ -5,6 +5,7 @@ rm(list = ls())
 #source other files
 source("optimisation.R")
 
+
 #get base model
 base <- build_base(input_file_path = "C:\\Users\\hamzajuzer\\Documents\\LocationEdge\\InputFiles\\", 
                    output_csv=TRUE, output_spec=NULL, 
@@ -37,7 +38,7 @@ non_opt_res <- calc_non_opt_demand(input_file_path = "C:\\Users\\hamzajuzer\\Doc
                     store_name="new_store", 
                     store_lat=51.507351, 
                     store_long=-0.127758,
-                    retail_centre_type="Major Designer Outlet", store_size=20000, scaling_factor=0.14, output_csv=TRUE, output_spec=NULL)
+                    retail_centre_type="Major Designer Outlet", store_size=20000, scaling_factor=0.14, output_csv=TRUE, output_spec=NULL, run=1)
 
 #Compare 2 scenarios
 comparison <- compare_scenarios(arg_x=base, arg_y=opt_res$E12000005)

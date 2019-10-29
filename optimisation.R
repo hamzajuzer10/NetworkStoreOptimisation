@@ -795,96 +795,109 @@ calc_non_opt_demand <- function(input_file_path,
                                 store_name, store_lat, store_long, 
                                 retail_centre_type, store_size, 
                                 scaling_factor=1.0, 
-                                output_csv=TRUE, output_spec=NULL){
+                                output_csv=TRUE, output_spec=NULL, run=0){
   
-  ##Preprocess all data
-  message("Preprocessing data...")
-  preproc <- preprocess_optimisation(input_file_path, use_distance_estimate_measure=FALSE, apply_rules, apply_min_turnover, apply_store_filter, scaling_factor=scaling_factor)
-  message("Preprocessing data completed...")
-  
-  ##Calculate demand for new location
-  attractiveness_fun_arg <- list("using_opt" = FALSE,
-                                 "retail_centre_type" = retail_centre_type,
-                                 "competition_restaurants_df" = preproc$competition_restaurants_df,
-                                 "ten_mon_footfall_poly_df" = preproc$ten_mon_footfall_poly_df,
-                                 "ten_mon_footfall_OAs_df" = preproc$ten_mon_footfall_OAs_df,
-                                 "s.london_poly_df" = preproc$s.london_poly_df,
-                                 "competition_distance_KM" = competition_distance_KM,
-                                 "oa_class_df" = preproc$oa_class_df,
-                                 "OA_centroids_df" = preproc$OA_centroids_df,
-                                 "store_size" = store_size)
-  
-  ##message("Calculating drive times for new store location...")
-  ##s_pred <- calc_demand(store_name = store_name, 
-  ##                      store_lat = store_lat,
-  ##                    store_long = store_long,
-  ##                    preproc$LSOA_centroids_df,
-  ##                    preproc$Store_centroids_df, preproc$Drive_time_matrix_adf, 
-  ##                    preproc$Store_list_df, calculateAttractivenessAndClass, attractiveness_fun_arg, 
-  ##                    preproc$constants_df, preproc$LSOA_demand_surface_df, max_LSOA_dist_km=max_LSOA_dist_km, 
-  ##                    use_drive_time_list = FALSE, 
-  ##                    Drive_time_list_df=preproc$Drive_time_list_df, 
-  ##                    scaling_factor=scaling_factor,
-  ##                    Drive_time_list_gen_df=preproc$Drive_time_list_gen_df)
-  ##message("Completed calculating drive times for new store location...")
-  
-  #check if store meets min demand conditions
-  ##if (apply_rules){
+  if (run == 1){
+    ##Preprocess all data
+    message("Preprocessing data...")
+    preproc <- preprocess_optimisation(input_file_path, use_distance_estimate_measure=FALSE, apply_rules, apply_min_turnover, apply_store_filter, scaling_factor=scaling_factor)
+    message("Preprocessing data completed...")
     
-  ##if (s_pred$demand < apply_min_turnover){
-      
-      ## break from current loop
-  ##  message("Store at new location does not meet required demand conditions!")
-  ##  stop("Terminating further calculation!")
-      
-  ##}
+    ##Calculate demand for new location
+    attractiveness_fun_arg <- list("using_opt" = FALSE,
+                                   "retail_centre_type" = retail_centre_type,
+                                   "competition_restaurants_df" = preproc$competition_restaurants_df,
+                                   "ten_mon_footfall_poly_df" = preproc$ten_mon_footfall_poly_df,
+                                   "ten_mon_footfall_OAs_df" = preproc$ten_mon_footfall_OAs_df,
+                                   "s.london_poly_df" = preproc$s.london_poly_df,
+                                   "competition_distance_KM" = competition_distance_KM,
+                                   "oa_class_df" = preproc$oa_class_df,
+                                   "OA_centroids_df" = preproc$OA_centroids_df,
+                                   "store_size" = store_size)
     
-  ##}
-  
-  #Add store to store list and drivetime matrix adf for full calculation
-  message("Adding store to the store list and drive time matrix...")
-  new_m <- calc_new_drive_time_matrix_and_store_list(as.character(store_name), store_lat, store_long, preproc$LSOA_centroids_df,
-                                                     preproc$Store_centroids_df, preproc$Drive_time_matrix_adf, 
-                                                     preproc$Store_list_df, calculateAttractivenessAndClass, attractiveness_fun_arg, 
-                                                     preproc$constants_df, preproc$LSOA_demand_surface_df, max_LSOA_dist_km=max_LSOA_dist_km, 
-                                                     use_drive_time_list=FALSE, preproc$Drive_time_list_df, Drive_time_list_gen_df=preproc$Drive_time_list_gen_df)
-  
-  
-  
-  #Once all optimal stores have been added, calculate the full demand matrix again
-  message("Calculating demand for new store location...")
-  result <- modelfunc(new_m$Store_list_df_n, preproc$constants_df, 
-                      preproc$LSOA_demand_surface_df, new_m$Drive_time_matrix_adf_n, scaling_factor=scaling_factor)
-  
-  #return the new drive time matrix and store list, and existing store centroid, and other new store specific info
-  new_store_parameters <- data.frame("footfall" = new_m$footfall, 
-                                     "competition_one_km" = new_m$competition_one_km, 
-                                     "competition_sq_feet_one_km" = new_m$competition_sq_feet_one_km,
-                                     "class" = new_m$class, 
-                                     "in_london" = new_m$in_london,
-                                     "n_lat" = new_m$n_lat, 
-                                     "n_long" = new_m$n_long)
-  
-  
-  result$new_store_parameters <- new_store_parameters
-  
-  if (output_csv)
-  {
-    if(!is.null(output_spec)){
-      
-      fwrite(result$Gravity_model_store_predictions, file = paste(output_spec,"New_store_demand",".csv"), row.names=FALSE)
-      fwrite(result$new_store_parameters, file = paste(output_spec,"New_store_parameters",".csv"), row.names=FALSE)
-      
-    } else {
-      
-      message('No output specifier provided - csv files may be overwritten!')
-      fwrite(result$Gravity_model_store_predictions, file = paste("New_store_demand",".csv"), row.names=FALSE)
-      fwrite(result$new_store_parameters, file = paste(output_spec,"New_store_parameters",".csv"), row.names=FALSE)
-
+    ##message("Calculating drive times for new store location...")
+    ##s_pred <- calc_demand(store_name = store_name, 
+    ##                      store_lat = store_lat,
+    ##                    store_long = store_long,
+    ##                    preproc$LSOA_centroids_df,
+    ##                    preproc$Store_centroids_df, preproc$Drive_time_matrix_adf, 
+    ##                    preproc$Store_list_df, calculateAttractivenessAndClass, attractiveness_fun_arg, 
+    ##                    preproc$constants_df, preproc$LSOA_demand_surface_df, max_LSOA_dist_km=max_LSOA_dist_km, 
+    ##                    use_drive_time_list = FALSE, 
+    ##                    Drive_time_list_df=preproc$Drive_time_list_df, 
+    ##                    scaling_factor=scaling_factor,
+    ##                    Drive_time_list_gen_df=preproc$Drive_time_list_gen_df)
+    ##message("Completed calculating drive times for new store location...")
+    
+    #check if store meets min demand conditions
+    ##if (apply_rules){
+    
+    ##if (s_pred$demand < apply_min_turnover){
+    
+    ## break from current loop
+    ##  message("Store at new location does not meet required demand conditions!")
+    ##  stop("Terminating further calculation!")
+    
+    ##}
+    
+    ##}
+    
+    #Add store to store list and drivetime matrix adf for full calculation
+    message("Adding store to the store list and drive time matrix...")
+    new_m <- calc_new_drive_time_matrix_and_store_list(as.character(store_name), store_lat, store_long, preproc$LSOA_centroids_df,
+                                                       preproc$Store_centroids_df, preproc$Drive_time_matrix_adf, 
+                                                       preproc$Store_list_df, calculateAttractivenessAndClass, attractiveness_fun_arg, 
+                                                       preproc$constants_df, preproc$LSOA_demand_surface_df, max_LSOA_dist_km=max_LSOA_dist_km, 
+                                                       use_drive_time_list=FALSE, preproc$Drive_time_list_df, Drive_time_list_gen_df=preproc$Drive_time_list_gen_df)
+    
+    
+    
+    #Once all optimal stores have been added, calculate the full demand matrix again
+    message("Calculating demand for new store location...")
+    result <- modelfunc(new_m$Store_list_df_n, preproc$constants_df, 
+                        preproc$LSOA_demand_surface_df, new_m$Drive_time_matrix_adf_n, scaling_factor=scaling_factor)
+    
+    #return the new drive time matrix and store list, and existing store centroid, and other new store specific info
+    new_store_parameters <- data.frame("footfall" = new_m$footfall, 
+                                       "competition_one_km" = new_m$competition_one_km, 
+                                       "competition_sq_feet_one_km" = new_m$competition_sq_feet_one_km,
+                                       "class" = new_m$class, 
+                                       "in_london" = new_m$in_london,
+                                       "n_lat" = new_m$n_lat, 
+                                       "n_long" = new_m$n_long)
+    
+    
+    result$new_store_parameters <- new_store_parameters
+    
+    #Add the latitude and longitudes to all stores
+    new_store_df <- list(store=store_name, lat=store_lat, long=store_long)
+    new_store_df = rbind(preproc$Store_centroids_df,new_store_df, stringsAsFactors=FALSE)
+    result$Gravity_model_store_predictions = merge(result$Gravity_model_store_predictions, new_store_df, by="store")
+    
+    
+    if (output_csv)
+    {
+      if(!is.null(output_spec)){
+        
+        fwrite(result$Gravity_model_store_predictions, file = paste(output_spec,"New_store_demand",".csv"), row.names=FALSE)
+        fwrite(result$new_store_parameters, file = paste(output_spec,"New_store_parameters",".csv"), row.names=FALSE)
+        
+      } else {
+        
+        message('No output specifier provided - csv files may be overwritten!')
+        fwrite(result$Gravity_model_store_predictions, file = paste("New_store_demand",".csv"), row.names=FALSE)
+        fwrite(result$new_store_parameters, file = paste(output_spec,"New_store_parameters",".csv"), row.names=FALSE)
+        
+      }
     }
+    
+    return(1)
+    
+  } else {
+    
+    return(0)
+    
   }
-  
-  return(result)
   
 }
 
