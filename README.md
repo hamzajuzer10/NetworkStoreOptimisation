@@ -34,9 +34,9 @@ Arguments:
 
     a) input_file_path: "C:\\Users\\..\\" path to your input files - make sure you append an \\ to the end (see step 4 in cloning the repository),
 
-    b) output_csv: (TRUE/FALSE) writes the expected demand and output files for existing stores into the directory of your choice (see output_spec), 
+    b) output_csv: (TRUE/FALSE) writes the expected demand for existing stores into the directory of your choice (see output_spec) - demand data is stored in 'Store_demand.csv', 
 
-    c) output_spec: "C:\\Users\\.." specifies either the directory or a specifier prepended to the expected demand and output files to be written, 
+    c) output_spec: "C:\\Users\\.." specifies either the directory or a prefix to the expected demand output file to be written, 
 
     d) apply_rules: (TRUE/FALSE) applies store filtering rules (either by specifying the min turnover) or the names of the stores, 
 
@@ -137,8 +137,14 @@ Arguments:
     k) store_size: 20000 Used to calculate attractiveness
     
     l) scaling_factor: 0.14 applies a scaling factor to the output demand turnover prediction
+    
+    m) output_csv=(TRUE/FALSE) writes the expected demand and parameters for existing and new stores into the directory of your choice (see output_spec) - demand data is stored in 'New_store_demand.csv' and new store parameters are stored in 'New_store_parameters.csv', 
+    
+    n) output_spec= "C:\\Users\\.." specifies either the directory or a prefix to the expected demand and parameters output file to be written, 
+    
+    o) run=(0/1) Specifies whether the function should run - 1 runs the function, 0 merely returns a placeholder value 
 
-   The output of this function is a list with 1 key/value: key: "Gravity_model_store_predictions" and it holds a dataframe with cols: store, demand
+   The output of this function is a successful run, 0,  or not run ,1, flag
 
 4) compare_scenarios: This function will compare the output of the previous 3 functions to each other and return the demand difference for similar stores
 
